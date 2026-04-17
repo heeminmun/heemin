@@ -385,19 +385,19 @@
             document.getElementById('mainApp').classList.remove('hidden');
         }
         
-        // ===== 스토리지 헬퍼 =====
+// ===== 스토리지 헬퍼 (localStorage 표준으로 수정됨) =====
         const storage = {
             async get(key) {
                 try {
-                    const result = await window.storage.get(key, true);
-                    return result ? JSON.parse(result.value) : null;
+                    const result = localStorage.getItem(key);
+                    return result ? JSON.parse(result) : null;
                 } catch {
                     return null;
                 }
             },
             async set(key, value) {
                 try {
-                    await window.storage.set(key, JSON.stringify(value), true);
+                    localStorage.setItem(key, JSON.stringify(value));
                     return true;
                 } catch {
                     return false;
