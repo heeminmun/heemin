@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
+<!-- saved from url=(0196)file:///C:/Users/USER/OneDrive%20-%20%EC%A0%9C%EC%9D%B4%EC%A0%9C%EC%9D%B4%ED%88%B4%EC%8A%A4(%EC%A3%BC)/%EB%B0%94%ED%83%95%20%ED%99%94%EB%A9%B4/%EA%B3%B5%EC%9C%A0%20%EA%B0%80%EA%B3%84%EB%B6%80.html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공유 가계부</title>
     <style>
@@ -311,6 +311,104 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* 모달 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 560px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin: auto;
+        }
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-close {
+            background: transparent;
+            color: #64748b;
+            padding: 4px 10px;
+            border: 1px solid #e2e8f0;
+            font-size: 16px;
+        }
+        .modal-close:hover {
+            background: #f8fafc;
+            opacity: 1;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .btn-edit {
+            background: #0891b2;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .btn-secondary {
+            background: #64748b;
+        }
+        
+        /* 대출 계산 결과 박스 */
+        .calc-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 14px;
+        }
+        .calc-row strong {
+            color: #1e40af;
+        }
+        .calc-hint {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        .loan-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .loan-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #e0e7ff;
+            color: #4338ca;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
@@ -319,13 +417,7 @@
         <div class="login-box">
             <h2>🔒 공유 가계부</h2>
             <p class="subtitle">비밀번호를 입력하세요</p>
-            <input 
-                type="password" 
-                id="passwordInput" 
-                class="password-input" 
-                placeholder="비밀번호 입력"
-                autocomplete="off"
-            >
+            <input type="password" id="passwordInput" class="password-input" placeholder="비밀번호 입력" autocomplete="off">
             <button class="login-btn" onclick="checkPassword()">로그인</button>
             <p id="errorMsg" class="error-msg">비밀번호가 틀렸습니다!</p>
         </div>
@@ -334,11 +426,297 @@
     <!-- 메인 앱 -->
     <div id="mainApp" class="hidden">
         <div id="app" class="container">
-            <div class="loading" style="text-align:center;padding:40px;color:#64748b;">로딩 중...</div>
+            <div class="header">
+                <div>
+                    <h1>👨‍👩‍👧‍👦 공유 가계부</h1>
+                    <p style="color:#64748b;font-size:14px;">가족/친구와 함께 쓰는 가계부</p>
+                    <div class="share-info">
+                        🔒 비밀번호로 보호되는 안전한 가계부
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">🚪 로그아웃</button>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab(&#39;dashboard&#39;)">대시보드</div>
+                <div class="tab " onclick="switchTab(&#39;accounts&#39;)">계좌</div>
+                <div class="tab " onclick="switchTab(&#39;transactions&#39;)">거래</div>
+                <div class="tab " onclick="switchTab(&#39;transfer&#39;)">이체</div>
+                <div class="tab " onclick="switchTab(&#39;loans&#39;)">대출</div>
+            </div>
+            
+            <div id="dashboard" class="tab-content active">
+                
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">총 자산</div>
+                    <div class="stat-value">₩123</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">이번 달 수입</div>
+                    <div class="stat-value income">₩0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">이번 달 지출</div>
+                    <div class="stat-value expense">₩0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">대출 총액</div>
+                    <div class="stat-value">₩0</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">계좌 현황</div>
+                
+                        <div class="item">
+                            <div class="item-header">
+                                <div>
+                                    <div class="item-title">1123ㄷ</div>
+                                    <div class="item-details">123123 · 입출금</div>
+                                </div>
+                                <div class="item-amount">₩123</div>
+                            </div>
+                        </div>
+                    
+            </div>
+        
+            </div>
+            
+            <div id="accounts" class="tab-content ">
+                
+            <div class="card">
+                <div class="card-header">새 계좌 추가</div>
+                <form id="accountForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>계좌명</label>
+                            <input type="text" name="name" required="">
+                        </div>
+                        <div class="form-group">
+                            <label>은행</label>
+                            <input type="text" name="bank" required="">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>유형</label>
+                            <select name="type">
+                                <option>입출금</option>
+                                <option>적금</option>
+                                <option>마이너스통장</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>초기 잔액</label>
+                            <input type="number" name="balance" value="0">
+                        </div>
+                    </div>
+                    <button type="submit">계좌 추가</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">계좌 목록</div>
+                
+                        <div class="item">
+                            <div class="item-header">
+                                <div>
+                                    <div class="item-title">1123ㄷ</div>
+                                    <div class="item-details">123123 · 입출금</div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div class="item-amount">₩123</div>
+                                    <button class="btn-edit" onclick="openEditAccount(1776413006811)">수정</button>
+                                    <button class="danger" onclick="deleteAccount(1776413006811)">삭제</button>
+                                </div>
+                            </div>
+                        </div>
+                    
+            </div>
+        
+            </div>
+            
+            <div id="transactions" class="tab-content ">
+                
+            <div class="card">
+                <div class="card-header">새 거래 추가</div>
+                <form id="transForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>유형</label>
+                            <select name="type">
+                                <option value="income">수입</option>
+                                <option value="expense">지출</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>계좌</label>
+                            <select name="accountId">
+                                <option value="1776413006811">1123ㄷ</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>카테고리</label>
+                            <input type="text" name="category" placeholder="예: 식비">
+                        </div>
+                        <div class="form-group">
+                            <label>금액</label>
+                            <input type="number" name="amount" required="">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>날짜</label>
+                            <input type="date" name="date">
+                        </div>
+                        <div class="form-group">
+                            <label>메모</label>
+                            <input type="text" name="memo">
+                        </div>
+                    </div>
+                    <button type="submit">거래 추가</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">거래 내역</div>
+                <p style="text-align:center;color:#64748b;">거래 내역이 없습니다.</p>
+            </div>
+        
+            </div>
+            
+            <div id="transfer" class="tab-content ">
+                
+            <div class="card">
+                <div class="card-header">계좌 이체</div>
+                <form id="transferForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>출금 계좌</label>
+                            <select name="fromId">
+                                <option value="1776413006811">1123ㄷ</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>입금 계좌</label>
+                            <select name="toId">
+                                <option value="1776413006811">1123ㄷ</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>금액</label>
+                            <input type="number" name="amount" required="">
+                        </div>
+                        <div class="form-group">
+                            <label>날짜</label>
+                            <input type="date" name="date">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>메모</label>
+                        <input type="text" name="memo">
+                    </div>
+                    <button type="submit">이체 실행</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">이체 내역</div>
+                <p style="text-align:center;color:#64748b;">이체 내역이 없습니다.</p>
+            </div>
+        
+            </div>
+            
+            <div id="loans" class="tab-content ">
+                
+            <div class="card">
+                <div class="card-header">새 대출 추가</div>
+                <form id="loanForm">
+                    <div class="form-group">
+                        <label>대출명</label>
+                        <input type="text" name="name" required="">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>대출 원금</label>
+                            <input type="number" name="principal" oninput="updateLoanCalc(&#39;loanForm&#39;)" required="">
+                        </div>
+                        <div class="form-group">
+                            <label>연 이자율 (%)</label>
+                            <input type="number" step="0.001" name="rate" oninput="updateLoanCalc(&#39;loanForm&#39;)" required="">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>상환방식</label>
+                            <select name="repayType" onchange="updateLoanCalc(&#39;loanForm&#39;)">
+                                <option value="equal_payment">원리금균등상환</option>
+                                <option value="equal_principal">원금균등상환</option>
+                                <option value="bullet">만기일시상환</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>상환기간 (개월)</label>
+                            <input type="number" name="termMonths" oninput="updateLoanCalc(&#39;loanForm&#39;)" placeholder="예: 360 (30년)" required="">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>거치기간 (개월)</label>
+                            <input type="number" name="graceMonths" value="0" oninput="updateLoanCalc(&#39;loanForm&#39;)" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>상환 시작일</label>
+                            <input type="date" name="startDate" required="">
+                        </div>
+                    </div>
+                    <div id="loanForm_calc" class="calc-box" style="display:none;"></div>
+                    <button type="submit" style="margin-top:16px;">대출 추가</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">대출 목록</div>
+                <p style="text-align:center;color:#64748b;">대출이 없습니다.</p>
+            </div>
+        
+            </div>
+        </div>
+        
+        <!-- 편집 모달 -->
+        <div id="editModal" class="modal-overlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <span id="editModalTitle">편집</span>
+                    <button class="modal-close" onclick="closeEditModal()">✕</button>
+                </div>
+                <div id="editModalBody"></div>
+            </div>
         </div>
     </div>
     
   <script type="module">
+    // ===== Firebase 초기화 =====
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, setDoc, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqyHpeqe6KrpHXdbsPkFF0sopiFL-j8wA",
+      authDomain: "heemin-b1ee2.firebaseapp.com",
+      projectId: "heemin-b1ee2",
+      storageBucket: "heemin-b1ee2.firebasestorage.app",
+      messagingSenderId: "127076251033",
+      appId: "1:127076251033:web:b63b12a7b28c95ac204f08"
+    };
+    
+    const firebaseApp = initializeApp(firebaseConfig);
+    const db = getFirestore(firebaseApp);
+    
     // ===== 비밀번호 설정 =====
     // 여기서 비밀번호를 변경하세요!
     const PASSWORD = "1015";  // ← 원하는 비밀번호로 변경
@@ -386,53 +764,55 @@
         init();
     }
     
-    // ===== 스토리지 헬퍼 =====
-    const fallbackStorage = {
+    // ===== Firebase 스토리지 헬퍼 =====
+    // 사용자 ID (고정값 사용)
+    const userId = "shared_user";
+    
+    const storage = {
         async get(key) {
             try {
-                const value = localStorage.getItem(key);
-                return value ? JSON.parse(value) : null;
-            } catch {
+                const docRef = doc(db, "ledger", userId);
+                const docSnap = await getDocs(collection(db, "ledger"));
+                
+                for (const doc of docSnap.docs) {
+                    const data = doc.data();
+                    if (data[key]) {
+                        return data[key];
+                    }
+                }
+                return null;
+            } catch (error) {
+                console.warn('Firebase get error:', error);
                 return null;
             }
         },
         async set(key, value) {
             try {
-                localStorage.setItem(key, JSON.stringify(value));
+                const docRef = doc(db, "ledger", userId);
+                
+                // 기존 문서 확인
+                const existing = await getDocs(collection(db, "ledger"));
+                
+                if (existing.docs.length > 0) {
+                    // 기존 문서 업데이트
+                    await updateDoc(existing.docs[0].ref, {
+                        [key]: value,
+                        lastUpdated: new Date()
+                    });
+                } else {
+                    // 새 문서 생성
+                    const docRef = doc(db, "ledger", userId);
+                    await setDoc(docRef, {
+                        [key]: value,
+                        lastUpdated: new Date()
+                    });
+                }
                 return true;
-            } catch {
-                alert('저장에 실패했습니다. 브라우저 저장소(localStorage)를 확인해주세요.');
+            } catch (error) {
+                console.error('Firebase set error:', error);
+                alert('저장에 실패했습니다: ' + error.message);
                 return false;
             }
-        }
-    };
-    
-    const storage = {
-        async get(key) {
-            if (window.storage?.get) {
-                try {
-                    const result = await window.storage.get(key, true);
-                    return result ? JSON.parse(result.value) : null;
-                } catch {
-                    return await fallbackStorage.get(key);
-                }
-            }
-            return await fallbackStorage.get(key);
-        },
-        async set(key, value) {
-            if (window.storage?.set) {
-                try {
-                    await window.storage.set(key, JSON.stringify(value), true);
-                    return true;
-                } catch {
-                    const saved = await fallbackStorage.set(key, value);
-                    if (!saved) {
-                        alert('저장에 실패했습니다.');
-                    }
-                    return saved;
-                }
-            }
-            return await fallbackStorage.set(key, value);
         }
     };
     
@@ -445,11 +825,95 @@
     };
     
     async function loadData() {
-        data.accounts = await storage.get('shared-accounts') || [];
-        data.transactions = await storage.get('shared-transactions') || [];
-        data.transfers = await storage.get('shared-transfers') || [];
-        data.loans = await storage.get('shared-loans') || [];
+        try {
+            // Firestore에서 데이터 로드
+            const docSnap = await getDocs(collection(db, "ledger"));
+            
+            if (docSnap.docs.length > 0) {
+                const docData = docSnap.docs[0].data();
+                data.accounts = docData['shared-accounts'] || [];
+                data.transactions = docData['shared-transactions'] || [];
+                data.transfers = docData['shared-transfers'] || [];
+                data.loans = docData['shared-loans'] || [];
+            }
+            
+            // 구버전 대출 데이터 마이그레이션
+            let migrated = false;
+            data.loans.forEach(loan => {
+                if (loan.termMonths === undefined || loan.termMonths === null) {
+                    const monthly = Number(loan.monthly) || 0;
+                    const principal = Number(loan.principal) || 0;
+                    if (monthly > 0 && principal > 0) {
+                        loan.termMonths = Math.ceil(principal / monthly);
+                    } else {
+                        loan.termMonths = 12;
+                    }
+                    loan.graceMonths = 0;
+                    loan.repayType = 'equal_payment';
+                    migrated = true;
+                }
+                if (loan.repayType === undefined) { loan.repayType = 'equal_payment'; migrated = true; }
+                if (loan.graceMonths === undefined) { loan.graceMonths = 0; migrated = true; }
+            });
+            
+            if (migrated) {
+                // 마이그레이션 후 저장
+                const docSnap2 = await getDocs(collection(db, "ledger"));
+                if (docSnap2.docs.length > 0) {
+                    await updateDoc(docSnap2.docs[0].ref, {
+                        'shared-loans': data.loans,
+                        lastUpdated: new Date()
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('loadData error:', error);
+            alert('데이터 로드 실패: ' + error.message);
+        }
     }
+    
+    // 실시간 동기화 리스너 (다른 기기에서 수정 시 자동 반영)
+    let unsubscribe;
+    function setupRealtimeListener() {
+        try {
+            // 간단한 폴링 방식: 5초마다 데이터 갱신 확인
+            setInterval(async () => {
+                if (sessionStorage.getItem('loggedIn') === 'true') {
+                    try {
+                        const docSnap = await getDocs(collection(db, "ledger"));
+                        if (docSnap.docs.length > 0) {
+                            const newData = docSnap.docs[0].data();
+                            // 데이터가 변경되었는지 확인
+                            const accounts = newData['shared-accounts'] || [];
+                            const transactions = newData['shared-transactions'] || [];
+                            const transfers = newData['shared-transfers'] || [];
+                            const loans = newData['shared-loans'] || [];
+                            
+                            // 간단한 비교 (길이만 확인)
+                            if (accounts.length !== data.accounts.length ||
+                                transactions.length !== data.transactions.length ||
+                                transfers.length !== data.transfers.length ||
+                                loans.length !== data.loans.length) {
+                                console.log('다른 기기에서 데이터가 변경됨');
+                                data.accounts = accounts;
+                                data.transactions = transactions;
+                                data.transfers = transfers;
+                                data.loans = loans;
+                                render();
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Sync check error:', e);
+                    }
+                }
+            }, 5000); // 5초마다 체크
+        } catch (error) {
+            console.warn('Realtime listener setup failed:', error);
+        }
+    }
+    
+    // 앱 시작 시 리스너 설정
+    setupRealtimeListener();
     
     let currentTab = 'dashboard';
     
@@ -600,8 +1064,9 @@
                                     <div class="item-title">${acc.name}</div>
                                     <div class="item-details">${acc.bank} · ${acc.type}</div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="display:flex;align-items:center;gap:8px;">
                                     <div class="item-amount">${formatMoney(acc.balance)}</div>
+                                    <button class="btn-edit" onclick="openEditAccount(${acc.id})">수정</button>
                                     <button class="danger" onclick="deleteAccount(${acc.id})">삭제</button>
                                 </div>
                             </div>
@@ -763,24 +1228,39 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>대출 원금</label>
-                            <input type="number" name="principal" required>
+                            <input type="number" name="principal" oninput="updateLoanCalc('loanForm')" required>
                         </div>
                         <div class="form-group">
-                            <label>월 상환액</label>
-                            <input type="number" name="monthly" required>
+                            <label>연 이자율 (%)</label>
+                            <input type="number" step="0.001" name="rate" oninput="updateLoanCalc('loanForm')" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>연 이자율 (%)</label>
-                            <input type="number" step="0.01" name="rate" required>
+                            <label>상환방식</label>
+                            <select name="repayType" onchange="updateLoanCalc('loanForm')">
+                                <option value="equal_payment">원리금균등상환</option>
+                                <option value="equal_principal">원금균등상환</option>
+                                <option value="bullet">만기일시상환</option>
+                            </select>
                         </div>
                         <div class="form-group">
-                            <label>시작일</label>
-                            <input type="date" name="startDate">
+                            <label>상환기간 (개월)</label>
+                            <input type="number" name="termMonths" oninput="updateLoanCalc('loanForm')" placeholder="예: 360 (30년)" required>
                         </div>
                     </div>
-                    <button type="submit">대출 추가</button>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>거치기간 (개월)</label>
+                            <input type="number" name="graceMonths" value="0" oninput="updateLoanCalc('loanForm')" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>상환 시작일</label>
+                            <input type="date" name="startDate" required>
+                        </div>
+                    </div>
+                    <div id="loanForm_calc" class="calc-box" style="display:none;"></div>
+                    <button type="submit" style="margin-top:16px;">대출 추가</button>
                 </form>
             </div>
             
@@ -788,21 +1268,37 @@
                 <div class="card-header">대출 목록</div>
                 ${data.loans.length === 0 ? '<p style="text-align:center;color:#64748b;">대출이 없습니다.</p>' :
                     data.loans.map(loan => {
-                        const monthsPassed = Math.floor((new Date() - new Date(loan.startDate)) / (1000 * 60 * 60 * 24 * 30));
-                        const remaining = Math.max(0, loan.principal - (loan.monthly * monthsPassed));
-                        const monthlyInterest = (loan.principal * loan.rate / 100 / 12).toFixed(0);
-                        
+                        const calc = calculateLoan(loan);
+                        const typeLabel = getRepayTypeLabel(loan.repayType);
                         return `
                             <div class="item">
                                 <div class="item-header">
-                                    <div class="item-title">${loan.name}</div>
-                                    <button class="danger" onclick="deleteLoan(${loan.id})">삭제</button>
+                                    <div>
+                                        <div class="item-title">
+                                            ${loan.name}
+                                            <span class="loan-badge">${typeLabel}</span>
+                                        </div>
+                                        <div class="item-details">
+                                            원금 ${formatMoney(loan.principal)} · 
+                                            ${loan.rate}% · 
+                                            ${loan.termMonths}개월
+                                            ${loan.graceMonths > 0 ? ` (거치 ${loan.graceMonths}개월)` : ''}
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <button class="btn-edit" onclick="openEditLoan(${loan.id})">수정</button>
+                                        <button class="danger" onclick="deleteLoan(${loan.id})">삭제</button>
+                                    </div>
                                 </div>
-                                <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;color:#64748b;">
-                                    <div>원금: ${formatMoney(loan.principal)}</div>
-                                    <div>잔액: ${formatMoney(remaining)}</div>
-                                    <div>월 상환액: ${formatMoney(loan.monthly)}</div>
-                                    <div>월 이자: ~${formatMoney(monthlyInterest)}</div>
+                                <div class="loan-summary">
+                                    <div>시작일: ${loan.startDate || '-'}</div>
+                                    <div>종료일: ${calc.endDate || '-'}</div>
+                                    <div>월 상환액: <strong>${calc.monthlyPaymentLabel}</strong></div>
+                                    <div>총 이자: ${formatMoney(calc.totalInterest)}</div>
+                                    <div>총 상환액: ${formatMoney(calc.totalPayment)}</div>
+                                    <div>경과 회차: ${calc.monthsPassed} / ${loan.termMonths}회</div>
+                                    <div>현재 예상 잔액: <strong>${formatMoney(calc.remainingBalance)}</strong></div>
+                                    <div>이번 달 이자: ~${formatMoney(calc.currentMonthInterest)}</div>
                                 </div>
                             </div>
                         `;
@@ -906,13 +1402,25 @@
             loanForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
+                const principal = parseFloat(formData.get('principal'));
+                const rate = parseFloat(formData.get('rate'));
+                const termMonths = parseInt(formData.get('termMonths'));
+                const graceMonths = parseInt(formData.get('graceMonths')) || 0;
+                const repayType = formData.get('repayType');
+                
+                if (graceMonths >= termMonths) {
+                    alert('거치기간은 상환기간보다 짧아야 합니다.');
+                    return;
+                }
                 
                 data.loans.push({
                     id: Date.now(),
                     name: formData.get('name'),
-                    principal: parseFloat(formData.get('principal')),
-                    monthly: parseFloat(formData.get('monthly')),
-                    rate: parseFloat(formData.get('rate')),
+                    principal: principal,
+                    rate: rate,
+                    termMonths: termMonths,
+                    graceMonths: graceMonths,
+                    repayType: repayType,
                     startDate: formData.get('startDate')
                 });
                 
@@ -977,9 +1485,380 @@
         }
     };
     
+    // ============================================
+    // 대출 계산 로직
+    // ============================================
+    function getRepayTypeLabel(type) {
+        const labels = {
+            'equal_payment': '원리금균등',
+            'equal_principal': '원금균등',
+            'bullet': '만기일시'
+        };
+        return labels[type] || '원리금균등';
+    }
+    
+    // 대출의 모든 주요 값을 계산 (상환 스케줄 기반)
+    function calculateLoan(loan) {
+        const principal = Number(loan.principal) || 0;
+        const annualRate = Number(loan.rate) || 0;
+        const monthlyRate = annualRate / 100 / 12;
+        const termMonths = Number(loan.termMonths) || 0;
+        const graceMonths = Number(loan.graceMonths) || 0;
+        const repayMonths = termMonths - graceMonths; // 실제 원금 상환 개월
+        const repayType = loan.repayType || 'equal_payment';
+        
+        let monthlyPaymentLabel = '-';
+        let totalInterest = 0;
+        let totalPayment = 0;
+        let remainingBalance = principal;
+        let currentMonthInterest = 0;
+        let endDate = '-';
+        
+        // 경과 개월수
+        let monthsPassed = 0;
+        if (loan.startDate) {
+            const start = new Date(loan.startDate);
+            const now = new Date();
+            monthsPassed = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+            if (monthsPassed < 0) monthsPassed = 0;
+            if (monthsPassed > termMonths) monthsPassed = termMonths;
+            
+            // 종료일 계산
+            const end = new Date(start);
+            end.setMonth(end.getMonth() + termMonths);
+            endDate = end.toISOString().slice(0, 10);
+        }
+        
+        if (principal <= 0 || termMonths <= 0 || repayMonths <= 0) {
+            return {
+                monthlyPaymentLabel, totalInterest, totalPayment,
+                remainingBalance, currentMonthInterest, monthsPassed, endDate
+            };
+        }
+        
+        if (repayType === 'equal_payment') {
+            // 원리금균등: 거치기간엔 이자만, 이후 월 상환액 고정
+            let graceInterest = 0;
+            if (graceMonths > 0) {
+                graceInterest = principal * monthlyRate * graceMonths;
+            }
+            // 원리금균등 공식
+            let monthly;
+            if (monthlyRate === 0) {
+                monthly = principal / repayMonths;
+            } else {
+                monthly = principal * monthlyRate * Math.pow(1 + monthlyRate, repayMonths) 
+                        / (Math.pow(1 + monthlyRate, repayMonths) - 1);
+            }
+            totalPayment = monthly * repayMonths + graceInterest;
+            totalInterest = totalPayment - principal;
+            
+            if (graceMonths > 0) {
+                monthlyPaymentLabel = `거치: ${formatMoney(principal * monthlyRate)} / 상환: ${formatMoney(monthly)}`;
+            } else {
+                monthlyPaymentLabel = formatMoney(monthly);
+            }
+            
+            // 현재 잔액 계산 (상환 스케줄 시뮬레이션)
+            let bal = principal;
+            for (let i = 0; i < monthsPassed; i++) {
+                const interest = bal * monthlyRate;
+                if (i < graceMonths) {
+                    // 거치기간: 원금 그대로
+                } else {
+                    const principalPay = monthly - interest;
+                    bal -= principalPay;
+                    if (bal < 0) bal = 0;
+                }
+            }
+            remainingBalance = bal;
+            currentMonthInterest = bal * monthlyRate;
+            
+        } else if (repayType === 'equal_principal') {
+            // 원금균등: 매달 원금 = 원금/상환개월수, 이자는 잔액 × 월이율
+            const monthlyPrincipal = principal / repayMonths;
+            const firstPayment = monthlyPrincipal + (principal * monthlyRate);
+            const lastPayment = monthlyPrincipal + (monthlyPrincipal * monthlyRate);
+            
+            // 총 이자: 거치기간 이자 + 상환기간 이자
+            let graceInterest = principal * monthlyRate * graceMonths;
+            let repayInterest = 0;
+            let bal = principal;
+            for (let i = 0; i < repayMonths; i++) {
+                repayInterest += bal * monthlyRate;
+                bal -= monthlyPrincipal;
+            }
+            totalInterest = graceInterest + repayInterest;
+            totalPayment = principal + totalInterest;
+            
+            if (graceMonths > 0) {
+                monthlyPaymentLabel = `거치: ${formatMoney(principal * monthlyRate)} / 첫달: ${formatMoney(firstPayment)} → 마지막: ${formatMoney(lastPayment)}`;
+            } else {
+                monthlyPaymentLabel = `첫달: ${formatMoney(firstPayment)} → 마지막: ${formatMoney(lastPayment)}`;
+            }
+            
+            // 현재 잔액
+            let b = principal;
+            for (let i = 0; i < monthsPassed; i++) {
+                if (i < graceMonths) {
+                    // 거치기간: 원금 그대로
+                } else {
+                    b -= monthlyPrincipal;
+                    if (b < 0) b = 0;
+                }
+            }
+            remainingBalance = b;
+            currentMonthInterest = b * monthlyRate;
+            
+        } else if (repayType === 'bullet') {
+            // 만기일시: 매달 이자만, 만기에 원금 전액
+            const monthlyInterest = principal * monthlyRate;
+            totalInterest = monthlyInterest * termMonths;
+            totalPayment = principal + totalInterest;
+            monthlyPaymentLabel = `이자 ${formatMoney(monthlyInterest)} / 만기 ${formatMoney(principal)}`;
+            
+            // 만기 전에는 원금 그대로
+            if (monthsPassed >= termMonths) {
+                remainingBalance = 0;
+            } else {
+                remainingBalance = principal;
+            }
+            currentMonthInterest = monthlyInterest;
+        }
+        
+        return {
+            monthlyPaymentLabel,
+            totalInterest,
+            totalPayment,
+            remainingBalance,
+            currentMonthInterest,
+            monthsPassed,
+            endDate
+        };
+    }
+    
+    // 폼에서 입력한 값으로 실시간 미리보기 계산
+    window.updateLoanCalc = function(formId) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+        const calcBox = document.getElementById(formId + '_calc');
+        if (!calcBox) return;
+        
+        const fd = new FormData(form);
+        const principal = parseFloat(fd.get('principal')) || 0;
+        const rate = parseFloat(fd.get('rate')) || 0;
+        const termMonths = parseInt(fd.get('termMonths')) || 0;
+        const graceMonths = parseInt(fd.get('graceMonths')) || 0;
+        const repayType = fd.get('repayType') || 'equal_payment';
+        
+        if (principal <= 0 || termMonths <= 0) {
+            calcBox.style.display = 'none';
+            return;
+        }
+        
+        if (graceMonths >= termMonths) {
+            calcBox.style.display = 'block';
+            calcBox.innerHTML = '<div style="color:#dc2626;">⚠️ 거치기간은 상환기간보다 짧아야 합니다.</div>';
+            return;
+        }
+        
+        const loan = { principal, rate, termMonths, graceMonths, repayType, startDate: null };
+        const calc = calculateLoan(loan);
+        
+        calcBox.style.display = 'block';
+        calcBox.innerHTML = `
+            <div style="font-weight:600;margin-bottom:8px;color:#1e40af;">📊 자동 계산 결과</div>
+            <div class="calc-row"><span>상환방식</span><strong>${getRepayTypeLabel(repayType)}</strong></div>
+            <div class="calc-row"><span>월 상환액</span><strong>${calc.monthlyPaymentLabel}</strong></div>
+            <div class="calc-row"><span>총 이자</span><strong>${formatMoney(calc.totalInterest)}</strong></div>
+            <div class="calc-row"><span>총 상환액</span><strong>${formatMoney(calc.totalPayment)}</strong></div>
+            <div class="calc-hint">
+                ※ 위 금액은 입력값 기준 추정치입니다. 실제 금융기관 계산과 단수 차이가 있을 수 있습니다.
+                ${graceMonths > 0 ? '<br>※ 거치기간 동안은 이자만 납부합니다.' : ''}
+            </div>
+        `;
+    };
+    
+    // ============================================
+    // 계좌 수정 모달
+    // ============================================
+    window.openEditAccount = function(id) {
+        const acc = data.accounts.find(a => a.id === id);
+        if (!acc) return;
+        
+        document.getElementById('editModalTitle').textContent = '계좌 수정';
+        document.getElementById('editModalBody').innerHTML = `
+            <form id="editAccountForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>계좌명</label>
+                        <input type="text" name="name" value="${escapeHtml(acc.name)}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>은행</label>
+                        <input type="text" name="bank" value="${escapeHtml(acc.bank || '')}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>유형</label>
+                    <select name="type">
+                        <option value="입출금" ${acc.type === '입출금' ? 'selected' : ''}>입출금</option>
+                        <option value="적금" ${acc.type === '적금' ? 'selected' : ''}>적금</option>
+                        <option value="마이너스통장" ${acc.type === '마이너스통장' ? 'selected' : ''}>마이너스통장</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>현재 잔액 (수정 불가 - 거래/이체로만 변경)</label>
+                    <input type="text" value="${formatMoney(acc.balance)}" disabled style="background:#f1f5f9;color:#64748b;">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit">저장</button>
+                    <button type="button" class="btn-secondary" onclick="closeEditModal()">취소</button>
+                </div>
+            </form>
+        `;
+        document.getElementById('editModal').classList.add('active');
+        
+        document.getElementById('editAccountForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const target = data.accounts.find(a => a.id === id);
+            if (!target) return;
+            
+            target.name = fd.get('name');
+            target.bank = fd.get('bank');
+            target.type = fd.get('type');
+            
+            // 계좌 참조는 id로만 이뤄지므로 거래/이체 데이터는 자동으로 연결 유지됨
+            const saved = await storage.set('shared-accounts', data.accounts);
+            if (!saved) return;
+            closeEditModal();
+            alert('계좌 정보가 수정되었습니다!');
+            await init();
+        });
+    };
+    
+    // ============================================
+    // 대출 수정 모달
+    // ============================================
+    window.openEditLoan = function(id) {
+        const loan = data.loans.find(l => l.id === id);
+        if (!loan) return;
+        
+        const repayType = loan.repayType || 'equal_payment';
+        const graceMonths = loan.graceMonths || 0;
+        const termMonths = loan.termMonths || 0;
+        
+        document.getElementById('editModalTitle').textContent = '대출 수정';
+        document.getElementById('editModalBody').innerHTML = `
+            <form id="editLoanForm">
+                <div class="form-group">
+                    <label>대출명</label>
+                    <input type="text" name="name" value="${escapeHtml(loan.name)}" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>대출 원금</label>
+                        <input type="number" name="principal" value="${loan.principal}" oninput="updateLoanCalc('editLoanForm')" required>
+                    </div>
+                    <div class="form-group">
+                        <label>연 이자율 (%)</label>
+                        <input type="number" step="0.001" name="rate" value="${loan.rate}" oninput="updateLoanCalc('editLoanForm')" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>상환방식</label>
+                        <select name="repayType" onchange="updateLoanCalc('editLoanForm')">
+                            <option value="equal_payment" ${repayType === 'equal_payment' ? 'selected' : ''}>원리금균등상환</option>
+                            <option value="equal_principal" ${repayType === 'equal_principal' ? 'selected' : ''}>원금균등상환</option>
+                            <option value="bullet" ${repayType === 'bullet' ? 'selected' : ''}>만기일시상환</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>상환기간 (개월)</label>
+                        <input type="number" name="termMonths" value="${termMonths}" oninput="updateLoanCalc('editLoanForm')" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>거치기간 (개월)</label>
+                        <input type="number" name="graceMonths" value="${graceMonths}" oninput="updateLoanCalc('editLoanForm')">
+                    </div>
+                    <div class="form-group">
+                        <label>상환 시작일</label>
+                        <input type="date" name="startDate" value="${loan.startDate || ''}" required>
+                    </div>
+                </div>
+                <div id="editLoanForm_calc" class="calc-box"></div>
+                <div class="calc-hint" style="margin-top:8px;">
+                    ℹ️ 대출 정보만 수정됩니다. 기존 상환 거래내역은 그대로 유지됩니다.
+                </div>
+                <div class="modal-actions">
+                    <button type="submit">저장</button>
+                    <button type="button" class="btn-secondary" onclick="closeEditModal()">취소</button>
+                </div>
+            </form>
+        `;
+        document.getElementById('editModal').classList.add('active');
+        updateLoanCalc('editLoanForm');
+        
+        document.getElementById('editLoanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const tm = parseInt(fd.get('termMonths'));
+            const gm = parseInt(fd.get('graceMonths')) || 0;
+            
+            if (gm >= tm) {
+                alert('거치기간은 상환기간보다 짧아야 합니다.');
+                return;
+            }
+            
+            const target = data.loans.find(l => l.id === id);
+            if (!target) return;
+            
+            target.name = fd.get('name');
+            target.principal = parseFloat(fd.get('principal'));
+            target.rate = parseFloat(fd.get('rate'));
+            target.termMonths = tm;
+            target.graceMonths = gm;
+            target.repayType = fd.get('repayType');
+            target.startDate = fd.get('startDate');
+            // monthly 필드는 더 이상 사용하지 않으므로 제거
+            delete target.monthly;
+            
+            const saved = await storage.set('shared-loans', data.loans);
+            if (!saved) return;
+            closeEditModal();
+            alert('대출 정보가 수정되었습니다!');
+            await init();
+        });
+    };
+    
+    window.closeEditModal = function() {
+        document.getElementById('editModal').classList.remove('active');
+        document.getElementById('editModalBody').innerHTML = '';
+    };
+    
+    // 모달 바깥 클릭 시 닫기
+    document.getElementById('editModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
+    
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+    
     function formatMoney(amount) {
         return '₩' + Math.round(amount).toLocaleString('ko-KR');
     }
 </script>
-</body>
-</html>
+
+
+</body></html>
