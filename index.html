@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 가계부 Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .tab:hover {
+            background: var(--bg);
+        }
+        
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .card {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-light);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        button.secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        button.danger {
+            background: var(--danger);
+        }
+        
+        .account-item, .transaction-item, .loan-item {
+            background: var(--bg);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .item-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .item-amount {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .income {
+            color: var(--success);
+        }
+        
+        .expense {
+            color: var(--danger);
+        }
+        
+        .item-details {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        
+        .delete-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--border);
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 스마트 가계부 Pro</h1>
+            <p class="subtitle">계좌별 관리 + 대출 추적 + 이체 내역</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('dashboard')">대시보드</div>
+            <div class="tab" onclick="switchTab('accounts')">계좌 관리</div>
+            <div class="tab" onclick="switchTab('transactions')">거래 내역</div>
+            <div class="tab" onclick="switchTab('transfer')">계좌 이체</div>
+            <div class="tab" onclick="switchTab('loans')">대출 관리</div>
+        </div>
+        
+        <!-- 대시보드 -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">총 자산</div>
+                    <div class="stat-value" id="totalAssets">₩0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">이번 달 수입</div>
+                    <div class="stat-value income" id="monthIncome">₩0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">이번 달 지출</div>
+                    <div class="stat-value expense" id="monthExpense">₩0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">대출 총액</div>
+                    <div class="stat-value" id="totalLoans">₩0</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">계좌 현황</div>
+                <div id="accountsSummary"></div>
+            </div>
+        </div>
+        
+        <!-- 계좌 관리 -->
+        <div id="accounts" class="tab-content">
+            <div class="card">
+                <div class="card-header">새 계좌 추가</div>
+                <form id="accountForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>계좌명</label>
+                            <input type="text" id="accName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>은행</label>
+                            <input type="text" id="accBank" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>계좌 유형</label>
+                            <select id="accType">
+                                <option>입출금</option>
+                                <option>적금</option>
+                                <option>마이너스통장</option>
+                                <option>대출계좌</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>초기 잔액</label>
+                            <input type="number" id="accBalance" value="0">
+                        </div>
+                    </div>
+                    <button type="submit">계좌 추가</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">내 계좌 목록</div>
+                <div id="accountList"></div>
+            </div>
+        </div>
+        
+        <!-- 거래 내역 -->
+        <div id="transactions" class="tab-content">
+            <div class="card">
+                <div class="card-header">새 거래 추가</div>
+                <form id="transForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>유형</label>
+                            <select id="transType">
+                                <option value="income">수입</option>
+                                <option value="expense">지출</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>계좌</label>
+                            <select id="transAccount"></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>카테고리</label>
+                            <input type="text" id="transCategory" placeholder="예: 식비">
+                        </div>
+                        <div class="form-group">
+                            <label>금액</label>
+                            <input type="number" id="transAmount" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>날짜</label>
+                            <input type="date" id="transDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>메모</label>
+                            <input type="text" id="transMemo">
+                        </div>
+                    </div>
+                    <button type="submit">거래 추가</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">전체 거래</div>
+                <div id="transList"></div>
+            </div>
+        </div>
+        
+        <!-- 계좌 이체 -->
+        <div id="transfer" class="tab-content">
+            <div class="card">
+                <div class="card-header">계좌 이체</div>
+                <form id="transferForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>출금 계좌</label>
+                            <select id="fromAccount"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>입금 계좌</label>
+                            <select id="toAccount"></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>금액</label>
+                            <input type="number" id="transferAmount" required>
+                        </div>
+                        <div class="form-group">
+                            <label>날짜</label>
+                            <input type="date" id="transferDate">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>메모</label>
+                        <input type="text" id="transferMemo">
+                    </div>
+                    <button type="submit">이체 실행</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">이체 내역</div>
+                <div id="transferList"></div>
+            </div>
+        </div>
+        
+        <!-- 대출 관리 -->
+        <div id="loans" class="tab-content">
+            <div class="card">
+                <div class="card-header">새 대출 추가</div>
+                <form id="loanForm">
+                    <div class="form-group">
+                        <label>대출명</label>
+                        <input type="text" id="loanName" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>대출 원금</label>
+                            <input type="number" id="loanPrincipal" required>
+                        </div>
+                        <div class="form-group">
+                            <label>월 상환액</label>
+                            <input type="number" id="loanMonthly" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>연 이자율 (%)</label>
+                            <input type="number" step="0.01" id="loanRate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>시작일</label>
+                            <input type="date" id="loanStart">
+                        </div>
+                    </div>
+                    <button type="submit">대출 추가</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">대출 목록</div>
+                <div id="loanList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 데이터 저장소
+        let data = {
+            accounts: [],
+            transactions: [],
+            transfers: [],
+            loans: []
+        };
+        
+        // 로컬 스토리지에서 데이터 불러오기
+        function loadData() {
+            const saved = localStorage.getItem('budgetData');
+            if (saved) {
+                data = JSON.parse(saved);
+            }
+        }
+        
+        // 데이터 저장
+        function saveData() {
+            localStorage.setItem('budgetData', JSON.stringify(data));
+        }
+        
+        // 초기화
+        loadData();
+        updateAll();
+        
+        // 날짜 기본값 설정
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('transDate').value = today;
+        document.getElementById('transferDate').value = today;
+        document.getElementById('loanStart').value = today;
+        
+        // 탭 전환
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        // 계좌 추가
+        document.getElementById('accountForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            data.accounts.push({
+                id: Date.now(),
+                name: document.getElementById('accName').value,
+                bank: document.getElementById('accBank').value,
+                type: document.getElementById('accType').value,
+                balance: parseFloat(document.getElementById('accBalance').value) || 0
+            });
+            
+            saveData();
+            this.reset();
+            updateAll();
+            alert('계좌가 추가되었습니다!');
+        });
+        
+        // 거래 추가
+        document.getElementById('transForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const type = document.getElementById('transType').value;
+            const accountId = parseInt(document.getElementById('transAccount').value);
+            const amount = parseFloat(document.getElementById('transAmount').value);
+            
+            data.transactions.push({
+                id: Date.now(),
+                type: type,
+                accountId: accountId,
+                category: document.getElementById('transCategory').value,
+                amount: amount,
+                date: document.getElementById('transDate').value,
+                memo: document.getElementById('transMemo').value
+            });
+            
+            // 계좌 잔액 업데이트
+            const account = data.accounts.find(a => a.id === accountId);
+            if (account) {
+                account.balance += (type === 'income' ? amount : -amount);
+            }
+            
+            saveData();
+            this.reset();
+            document.getElementById('transDate').value = today;
+            updateAll();
+            alert('거래가 추가되었습니다!');
+        });
+        
+        // 계좌 이체
+        document.getElementById('transferForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fromId = parseInt(document.getElementById('fromAccount').value);
+            const toId = parseInt(document.getElementById('toAccount').value);
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            
+            if (fromId === toId) {
+                alert('같은 계좌로는 이체할 수 없습니다.');
+                return;
+            }
+            
+            data.transfers.push({
+                id: Date.now(),
+                fromId: fromId,
+                toId: toId,
+                amount: amount,
+                date: document.getElementById('transferDate').value,
+                memo: document.getElementById('transferMemo').value
+            });
+            
+            // 계좌 잔액 업데이트
+            const fromAcc = data.accounts.find(a => a.id === fromId);
+            const toAcc = data.accounts.find(a => a.id === toId);
+            
+            if (fromAcc) fromAcc.balance -= amount;
+            if (toAcc) toAcc.balance += amount;
+            
+            saveData();
+            this.reset();
+            document.getElementById('transferDate').value = today;
+            updateAll();
+            alert('이체가 완료되었습니다!');
+        });
+        
+        // 대출 추가
+        document.getElementById('loanForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            data.loans.push({
+                id: Date.now(),
+                name: document.getElementById('loanName').value,
+                principal: parseFloat(document.getElementById('loanPrincipal').value),
+                monthly: parseFloat(document.getElementById('loanMonthly').value),
+                rate: parseFloat(document.getElementById('loanRate').value),
+                startDate: document.getElementById('loanStart').value
+            });
+            
+            saveData();
+            this.reset();
+            document.getElementById('loanStart').value = today;
+            updateAll();
+            alert('대출이 추가되었습니다!');
+        });
+        
+        // 모든 UI 업데이트
+        function updateAll() {
+            updateDashboard();
+            updateAccountList();
+            updateAccountSelects();
+            updateTransactionList();
+            updateTransferList();
+            updateLoanList();
+        }
+        
+        // 대시보드 업데이트
+        function updateDashboard() {
+            const totalAssets = data.accounts.reduce((sum, acc) => sum + acc.balance, 0);
+            const totalLoans = data.loans.reduce((sum, loan) => sum + loan.principal, 0);
+            
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthTrans = data.transactions.filter(t => t.date.startsWith(currentMonth));
+            
+            const monthIncome = monthTrans.filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            const monthExpense = monthTrans.filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            document.getElementById('totalAssets').textContent = formatMoney(totalAssets);
+            document.getElementById('monthIncome').textContent = formatMoney(monthIncome);
+            document.getElementById('monthExpense').textContent = formatMoney(monthExpense);
+            document.getElementById('totalLoans').textContent = formatMoney(totalLoans);
+            
+            // 계좌 현황
+            const summary = data.accounts.map(acc => `
+                <div class="account-item">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-title">${acc.name}</div>
+                            <div class="item-details">${acc.bank} · ${acc.type}</div>
+                        </div>
+                        <div class="item-amount">${formatMoney(acc.balance)}</div>
+                    </div>
+                </div>
+            `).join('') || '<p style="text-align:center;color:var(--text-light);">등록된 계좌가 없습니다.</p>';
+            
+            document.getElementById('accountsSummary').innerHTML = summary;
+        }
+        
+        // 계좌 목록 업데이트
+        function updateAccountList() {
+            const list = data.accounts.map(acc => `
+                <div class="account-item">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-title">${acc.name}</div>
+                            <div class="item-details">${acc.bank} · ${acc.type}</div>
+                        </div>
+                        <div>
+                            <span class="item-amount">${formatMoney(acc.balance)}</span>
+                            <button class="delete-btn" onclick="deleteAccount(${acc.id})">삭제</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') || '<p style="text-align:center;color:var(--text-light);">등록된 계좌가 없습니다.</p>';
+            
+            document.getElementById('accountList').innerHTML = list;
+        }
+        
+        // 계좌 선택 업데이트
+        function updateAccountSelects() {
+            const options = data.accounts.map(acc => 
+                `<option value="${acc.id}">${acc.name} (${acc.bank})</option>`
+            ).join('');
+            
+            document.getElementById('transAccount').innerHTML = options;
+            document.getElementById('fromAccount').innerHTML = options;
+            document.getElementById('toAccount').innerHTML = options;
+        }
+        
+        // 거래 목록 업데이트
+        function updateTransactionList() {
+            const list = data.transactions.slice().reverse().map(trans => {
+                const account = data.accounts.find(a => a.id === trans.accountId);
+                return `
+                    <div class="transaction-item">
+                        <div class="item-header">
+                            <div>
+                                <span class="item-title ${trans.type}">${trans.type === 'income' ? '수입' : '지출'}</span>
+                                <span style="margin:0 8px;">·</span>
+                                <span>${trans.category}</span>
+                                <div class="item-details">${account?.name || '삭제된 계좌'} · ${trans.date}</div>
+                                ${trans.memo ? `<div class="item-details">${trans.memo}</div>` : ''}
+                            </div>
+                            <div>
+                                <span class="item-amount ${trans.type}">${trans.type === 'income' ? '+' : '-'}${formatMoney(trans.amount)}</span>
+                                <button class="delete-btn" onclick="deleteTransaction(${trans.id})">삭제</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<p style="text-align:center;color:var(--text-light);">거래 내역이 없습니다.</p>';
+            
+            document.getElementById('transList').innerHTML = list;
+        }
+        
+        // 이체 목록 업데이트
+        function updateTransferList() {
+            const list = data.transfers.slice().reverse().map(transfer => {
+                const fromAcc = data.accounts.find(a => a.id === transfer.fromId);
+                const toAcc = data.accounts.find(a => a.id === transfer.toId);
+                return `
+                    <div class="transaction-item">
+                        <div class="item-header">
+                            <div>
+                                <div class="item-title">계좌 이체</div>
+                                <div class="item-details">${fromAcc?.name || '?'} → ${toAcc?.name || '?'}</div>
+                                <div class="item-details">${transfer.date}${transfer.memo ? ' · ' + transfer.memo : ''}</div>
+                            </div>
+                            <div>
+                                <span class="item-amount">${formatMoney(transfer.amount)}</span>
+                                <button class="delete-btn" onclick="deleteTransfer(${transfer.id})">삭제</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<p style="text-align:center;color:var(--text-light);">이체 내역이 없습니다.</p>';
+            
+            document.getElementById('transferList').innerHTML = list;
+        }
+        
+        // 대출 목록 업데이트
+        function updateLoanList() {
+            const list = data.loans.map(loan => {
+                const monthsPassed = Math.floor((new Date() - new Date(loan.startDate)) / (1000 * 60 * 60 * 24 * 30));
+                const remaining = loan.principal - (loan.monthly * monthsPassed);
+                const monthlyInterest = (loan.principal * loan.rate / 100 / 12).toFixed(0);
+                
+                return `
+                    <div class="loan-item">
+                        <div class="item-header">
+                            <div class="item-title">${loan.name}</div>
+                            <button class="delete-btn" onclick="deleteLoan(${loan.id})">삭제</button>
+                        </div>
+                        <div class="item-details" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                            <div>원금: ${formatMoney(loan.principal)}</div>
+                            <div>잔액: ${formatMoney(Math.max(0, remaining))}</div>
+                            <div>월 상환액: ${formatMoney(loan.monthly)}</div>
+                            <div>월 이자: ~${formatMoney(monthlyInterest)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<p style="text-align:center;color:var(--text-light);">대출이 없습니다.</p>';
+            
+            document.getElementById('loanList').innerHTML = list;
+        }
+        
+        // 삭제 함수들
+        function deleteAccount(id) {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                data.accounts = data.accounts.filter(a => a.id !== id);
+                saveData();
+                updateAll();
+            }
+        }
+        
+        function deleteTransaction(id) {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                const trans = data.transactions.find(t => t.id === id);
+                if (trans) {
+                    const account = data.accounts.find(a => a.id === trans.accountId);
+                    if (account) {
+                        account.balance -= (trans.type === 'income' ? trans.amount : -trans.amount);
+                    }
+                }
+                data.transactions = data.transactions.filter(t => t.id !== id);
+                saveData();
+                updateAll();
+            }
+        }
+        
+        function deleteTransfer(id) {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                const transfer = data.transfers.find(t => t.id === id);
+                if (transfer) {
+                    const fromAcc = data.accounts.find(a => a.id === transfer.fromId);
+                    const toAcc = data.accounts.find(a => a.id === transfer.toId);
+                    if (fromAcc) fromAcc.balance += transfer.amount;
+                    if (toAcc) toAcc.balance -= transfer.amount;
+                }
+                data.transfers = data.transfers.filter(t => t.id !== id);
+                saveData();
+                updateAll();
+            }
+        }
+        
+        function deleteLoan(id) {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                data.loans = data.loans.filter(l => l.id !== id);
+                saveData();
+                updateAll();
+            }
+        }
+        
+        // 금액 포맷
+        function formatMoney(amount) {
+            return '₩' + Math.round(amount).toLocaleString('ko-KR');
+        }
+    </script>
+</body>
+</html>
